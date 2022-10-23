@@ -89,11 +89,11 @@ def demo():
 #Adding noise to signal
 def Noise(Data, number,n):
     snr = 10.0**(number/10.0)
-    p1 = Data.var()   #power signal
-    Noise = p1/snr
-    w = sc.sqrt(Noise)*sc.randn(n)    #Noise Signal
+    power_signal = Data.var()   #power signal
+    Noise = power_signal/snr
+    noise_signal = sc.sqrt(Noise)*sc.randn(n)    #Noise Signal
         
-    return w
+    return noise_signal
 
 
 #download a file as excel
@@ -122,8 +122,8 @@ def download(time , magnitude):
     )
 
 
-def sum_signal(data, y):
-    newSignal = data + y
+def sum_signal(data, new1):
+    newSignal = data + new1
     return newSignal
 
 def add_signal():
@@ -208,8 +208,8 @@ if selected2=="Upload":
                 sum=0
                 if noise_ck:
                     snr = 10.0**(number/10.0)
-                    p1 = y_signal.var()   #power signal
-                    Noise = p1/snr
+                    power_signal = y_signal.var()   #power signal
+                    Noise = power_signal/snr
                     for i in n_Sample:
                         s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)+sc.sqrt(Noise)
                         sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
@@ -286,8 +286,8 @@ elif selected2=="Home":
             sum=0
             if noise:
                 snr = 10.0**(number/10.0)
-                p1 = signal.var()   #power signal
-                Noise = p1/snr
+                power_signal = signal.var()   #power signal
+                Noise = power_signal/snr
                 for i in n_Sample:
                     s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)+sc.sqrt(Noise)
                     sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
