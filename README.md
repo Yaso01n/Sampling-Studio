@@ -1,6 +1,6 @@
 # DSP_Task1_18
 
-![Cover Design](https://user-images.githubusercontent.com/87495750/197374339-c3fbdf65-fdc7-41bd-b539-b2932fc679f8.gif)#Center
+![Cover Design](https://user-images.githubusercontent.com/87495750/197374339-c3fbdf65-fdc7-41bd-b539-b2932fc679f8.gif)
 
 ## Basic Overview
 #### It is a web page that uses signal processing analysis on sine functions with sampling theory implementation.
