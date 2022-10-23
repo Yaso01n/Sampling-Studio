@@ -44,7 +44,7 @@
 #### you can upload any signal you generates before to work on it on the website.
 ![upload](https://user-images.githubusercontent.com/87495750/197377452-9403444c-ba13-4d1e-96db-9bbe006b7f6d.png)
 
-### 9.Uploaded signal using
+### 9.Uploaded signal feautures
 #### you can use the same feautures that are in generating a signal like add a signal, sum a signal, add noise, signal sampling, signal interpolation and downloading the signal again.
 
 
