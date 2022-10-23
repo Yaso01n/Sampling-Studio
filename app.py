@@ -134,9 +134,10 @@ def add_signal():
 
 
 
+
 # horizontal menu
-selected2 = option_menu(None, ["Home", "Upload", 'History'], 
-    icons=['house', 'folder', "save", '💀'], 
+selected2 = option_menu(None, ["Generate", "Upload"], 
+    icons=['house', 'folder', "save"], 
     menu_icon="cast", default_index=0, orientation="horizontal" ,
     styles={
         "container": {"padding": "0 px"},
@@ -224,7 +225,7 @@ if selected2=="Upload":
 
         download(x_signal,y_signal)
 
-elif selected2=="Home":
+elif selected2=="Generate":
 
     #drawing normal sine
     demo_btn =st.sidebar.button("Demo")
@@ -289,7 +290,7 @@ elif selected2=="Home":
                 power_signal = signal.var()   #power signal
                 Noise = power_signal/snr
                 for i in n_Sample:
-                    s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)+sc.sqrt(Noise)
+                    s_sample = amplitude* np.sin(2 * np.pi * frequency *i* T)+sc.sqrt(Noise)
                     sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
                 
 
