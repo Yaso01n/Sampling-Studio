@@ -115,7 +115,7 @@ def download(time , magnitude):
 
     workbook.close()
     #Button of downloading
-    st.sidebar.download_button(
+    st.download_button(
         label="Download",
         data=output.getvalue(),
         file_name="signal.xlsx",
@@ -149,9 +149,14 @@ selected2 = option_menu(None, ["Generate"],
 
     )
 
-
-Upload_ck= st.sidebar.checkbox("Upload")
-if Upload_ck:
+# def callback():
+#     st.session_state.button_clicked=True
+# st.button(
+#     label='upload',
+#     on_click=callback()
+# )
+upload_ck= st.sidebar.checkbox("Upload")
+if upload_ck:
     upload_file= st.file_uploader("Browse")
     if upload_file:
         signal_upload=pd.read_excel(upload_file)
@@ -164,8 +169,8 @@ if Upload_ck:
 
     
         sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10)
-        addSignal = st.checkbox('Add Signal')
-        noise_ck = st.checkbox('Add Noise') 
+        
+        noise_ck = st.sidebar.checkbox('Add Noise') 
 
         if noise_ck:
             number = st.sidebar.slider('Insert SNR')
@@ -173,11 +178,12 @@ if Upload_ck:
             y_signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
         
         signal_figure= px.line(signal_upload, x=x_signal, y=y_signal, title="The normal signal")
+        addSignal = st.sidebar.checkbox('Add Signal')
         
         if addSignal:
             added= add_signal()
             sumSignal = st.sidebar.button('Sum Signals')
-            signal_figure.add_scatter(x=t, y=added, mode="lines")
+            signal_figure.add_scatter(x=t, y=added, mode="lines",name="Added signal")
             if sumSignal:
                     y_signal= sum_signal(y_signal,added)  
                     signal_figure = px.line(y_signal, x=t, y=y_signal)
@@ -197,7 +203,7 @@ if Upload_ck:
             else:
                 signal_sample = amplitude * np.sin(2 * np.pi * frequency * t_sample)
 
-            signal_figure.add_scatter(x=t_sample, y=signal_sample,mode="markers", marker={"color":"black"})
+            signal_figure.add_scatter(x=t_sample, y=signal_sample,mode="markers",name="samples points", marker={"color":"black"})
             
             Inter=st.checkbox("interpolation")
             if Inter:
@@ -214,7 +220,7 @@ if Upload_ck:
                     for i in n_Sample:
                         s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)
                         sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
-                signal_figure.add_scatter(x=t, y=sum, mode="lines", line={"color":"red"})
+                signal_figure.add_scatter(x=t, y=sum, mode="lines",name="Reconstructed signal", line={"color":"red"})
             
         st.plotly_chart(signal_figure, use_container_width=True)
 
@@ -223,19 +229,21 @@ if Upload_ck:
 elif selected2=="Generate":
 
     #drawing normal sine
-    frequency = st.sidebar.slider("Frequency", min_value=0)
-    amplitude = st.sidebar.slider("Amplitude", min_value=0)
+    frequency = st.sidebar.slider("Frequency", min_value=1)
+    amplitude = st.sidebar.slider("Amplitude", min_value=1)
     sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10)
     signal = amplitude * np.sin(2 * np.pi * frequency * t)
     frequency_sample= sampleRate*frequency
     noise = st.sidebar.checkbox('Add noise')
+    
 
-    if frequency==0:
-        if amplitude==0:
-            signal= demo()
+    # if frequency==0:
+    #     if amplitude==0:
+    #         signal= demo()
     
 
     if noise:
+        
         number = st.sidebar.slider('Insert SNR')
         new_signal = Noise(signal, number,1001)
         signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
@@ -243,13 +251,13 @@ elif selected2=="Generate":
     addSignal = st.sidebar.checkbox('Add Signal')
     
 
-    fig = px.line(signal, x=t, y=signal)
+    fig = px.line(signal, x=t, y=signal).update_layout(xaxis_title="Time", yaxis_title="Amplitude")
 
     
     if addSignal:
         added= add_signal()
         sumSignal = st.sidebar.button('Sum Signals')
-        fig.add_scatter(x=t, y=added, mode="lines")
+        fig.add_scatter(x=t, y=added, mode="lines",name="added signal")
         if sumSignal:
                 signal= sum_signal(signal,added)  
                 fig = px.line(signal, x=t, y=signal)
@@ -275,7 +283,7 @@ elif selected2=="Generate":
         else:
             signal_sample = amplitude * np.sin(2 * np.pi * frequency * t_sample)
         
-        fig.add_scatter(x=t_sample, y=signal_sample, mode="markers", marker={"color":"black"})
+        fig.add_scatter(x=t_sample, y=signal_sample, mode="markers",name="samples points", marker={"color":"black"})
         
         
         Inter=st.checkbox("interpolation")
@@ -295,7 +303,7 @@ elif selected2=="Generate":
                     s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)
                     sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
         
-            fig.add_scatter(x=t, y=sum, mode="lines", line={"color":"red"})
+            fig.add_scatter(x=t, y=sum, mode="lines",name="Reconstructed signal", line={"color":"red"})
         
         # st.plotly_chart(fig2, use_container_width=True)
     else:
@@ -311,7 +319,7 @@ elif selected2=="Generate":
                else:
                    signal_sample = amplitude * np.sin(2 * np.pi * frequency * t_sample)
                
-               fig.add_scatter(x=t_sample, y=signal_sample, mode="markers", marker={"color":"black"})
+               fig.add_scatter(x=t_sample, y=signal_sample, mode="markers",name="samples points", marker={"color":"black"})
                
                
                Inter=st.checkbox("interpolation")
@@ -331,10 +339,10 @@ elif selected2=="Generate":
                            s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)
                            sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
                
-                   fig.add_scatter(x=t, y=sum, mode="lines", line={"color":"red"})
+                   fig.add_scatter(x=t, y=sum, mode="lines",name="Reconstructed signal",  line={"color":"red"})
 
             
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig,  use_container_width=True)
 
     download(t,signal)
     
