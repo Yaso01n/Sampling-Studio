@@ -249,6 +249,8 @@ elif selected2=="Generate":
     
 
     fig = px.line(signal, x=t, y=signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
+    fig.update_yaxes(title_font=dict(size=18,family="Arial"))
+    fig.update_xaxes(title_font=dict(size=18,family="Arial"))
 
     
     if addSignal:
