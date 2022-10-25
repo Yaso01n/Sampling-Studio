@@ -155,96 +155,94 @@ selected2 = option_menu(None, ["Generate"],
 #     label='upload',
 #     on_click=callback()
 # )
-upload_ck= st.sidebar.checkbox("Upload")
-if upload_ck:
-    upload_file= st.file_uploader("Browse")
-    if upload_file:
-        signal_upload=pd.read_excel(upload_file)
-        y_signal= signal_upload[signal_upload.columns[1]]
-        x_signal= signal_upload[signal_upload.columns[0]]
+
+# uploaded file
+upload_file= st.file_uploader("Browse")
+
+if upload_file:
+    signal_upload=pd.read_excel(upload_file)
+    y_signal= signal_upload[signal_upload.columns[1]]
+    x_signal= signal_upload[signal_upload.columns[0]]
+    amplitude=find_amplitude(y_signal)
+    frequency= max_frequency(y_signal/amplitude,x_signal)
+
+    sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10)
+    
+    noise_ck = st.sidebar.checkbox('Add Noise') 
+    if noise_ck:
+        number = st.sidebar.slider('Insert SNR')
+        new_signal = Noise(y_signal, number,1001)
+        y_signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
+    
+    signal_figure= px.line(signal_upload, x=x_signal, y=y_signal, title="The normal signal")
+    addSignal = st.sidebar.checkbox('Add Signal')
+    
+    if addSignal:
+        added, addedAmp, addedFreq= add_signal()
+        sumSignal = st.sidebar.button('Sum Signals')
+        signal_figure.add_scatter(x=t, y=added, mode="lines",name="Added signal",line={"color":"#e0b0ff"})
+        if sumSignal:
+                y_signal= sum_signal(y_signal,added)
+                frequency=frequency+addedFreq
+                amplitude=amplitude+addedAmp
+                signal_figure = px.line(y_signal, x=t, y=y_signal)
+                
+   
+
+    #sampling func
+    frequency_sample=frequency*sampleRate
+    if frequency_sample!=0:
+        T=1/frequency_sample
+        n_Sample=np.arange(0,1/T)
+        t_sample = n_Sample * T
+        
         amplitude=find_amplitude(y_signal)
-        frequency= max_frequency(y_signal/amplitude,x_signal)
-
-
-    
-        sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10)
+        frequency=max_frequency(y_signal/amplitude,x_signal)
+        signal_sample = amplitude * np.sin(2 * np.pi * frequency * t_sample)
+        signal_figure.add_scatter(x=t_sample, y=signal_sample,mode="markers",name="samples points", marker={"color":"black"})
         
-        noise_ck = st.sidebar.checkbox('Add Noise') 
-
-        if noise_ck:
-            number = st.sidebar.slider('Insert SNR')
-            new_signal = Noise(y_signal, number,1001)
-            y_signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
-        
-        signal_figure= px.line(signal_upload, x=x_signal, y=y_signal, title="The normal signal")
-        addSignal = st.sidebar.checkbox('Add Signal')
-        
-        if addSignal:
-            added, addedAmp, addedFreq= add_signal()
-            sumSignal = st.sidebar.button('Sum Signals')
-            signal_figure.add_scatter(x=t, y=added, mode="lines",name="Added signal",line={"color":"#e0b0ff"})
-            if sumSignal:
-                    y_signal= sum_signal(y_signal,added)
-                    frequency=frequency+addedFreq
-                    amplitude=amplitude+addedAmp
-                    signal_figure = px.line(y_signal, x=t, y=y_signal)
-                    
-       
-    
-        #sampling func
-        frequency_sample=frequency*sampleRate
-        if frequency_sample!=0:
-            T=1/frequency_sample
-            n_Sample=np.arange(0,1/T)
-            t_sample = n_Sample * T
-            
+        Inter=st.checkbox("interpolation")
+        if Inter:
+            sum=0
             amplitude=find_amplitude(y_signal)
             frequency=max_frequency(y_signal/amplitude,x_signal)
-
-
-            signal_sample = amplitude * np.sin(2 * np.pi * frequency * t_sample)
-
-            signal_figure.add_scatter(x=t_sample, y=signal_sample,mode="markers",name="samples points", marker={"color":"black"})
             
-            Inter=st.checkbox("interpolation")
-            if Inter:
-                sum=0
-
-                amplitude=find_amplitude(y_signal)
-                frequency=max_frequency(y_signal/amplitude,x_signal)
-                
-                for i in n_Sample:
-                    s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)
-                    sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
-
-                signal_figure.add_scatter(x=t, y=sum, mode="lines",name="Reconstructed signal", line={"color":"red"})
-            
-        st.plotly_chart(signal_figure, use_container_width=True)
+            for i in n_Sample:
+                s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)
+                sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
+            signal_figure.add_scatter(x=t, y=sum, mode="lines",name="Reconstructed signal", line={"color":"red"})
         
-
-        download(x_signal,y_signal)
+    st.plotly_chart(signal_figure, use_container_width=True)
+    
+    download(x_signal,y_signal)
 
 elif selected2=="Generate":
 
     #drawing normal sine
-    frequency = st.sidebar.slider("Frequency", min_value=1)
-    amplitude = st.sidebar.slider("Amplitude", min_value=1)
-    sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10)
+    frequency = st.sidebar.slider("Max Frequency", min_value=1,value=2)
+    amplitude = st.sidebar.slider("Amplitude", min_value=1,value=2)
     signal = amplitude * np.sin(2 * np.pi * frequency * t)
-    frequency_sample= sampleRate*frequency
-    noise = st.sidebar.checkbox('Add noise')
-    
 
+    sampleByFreq_ck=st.sidebar.checkbox('Sample by frequency')
+    
+    if sampleByFreq_ck:
+        sampleByFreq_sl = st.sidebar.slider("Frequency", min_value=1,value=2)
+        frequency_sample=sampleByFreq_sl
+    else:
+        sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10,value=2)
+        frequency_sample= sampleRate*frequency
+
+    noise = st.sidebar.checkbox('Add noise')
     if noise:
         
-        number = st.sidebar.slider('Insert SNR')
+        number = st.sidebar.slider('Insert SNR',min_value=1)
         new_signal = Noise(signal, number,1001)
         signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
     
     addSignal = st.sidebar.checkbox('Add Signal')
     
 
-    fig = px.line(signal, x=t, y=signal).update_layout(xaxis_title="Time", yaxis_title="Amplitude")
+    fig = px.line(signal, x=t, y=signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
 
     
     if addSignal:
