@@ -225,8 +225,8 @@ if upload_file:
 elif selected2=="Generate":
 
     #drawing normal sine
-    frequency = st.sidebar.slider("Max Frequency", min_value=1,value=2)
-    amplitude = st.sidebar.slider("Amplitude", min_value=1,value=2)
+    frequency = st.sidebar.slider("Max Frequency", min_value=1)
+    amplitude = st.sidebar.slider("Amplitude", min_value=1)
     signal = amplitude * np.sin(2 * np.pi * frequency * t)
 
     sampleByFreq_ck=st.sidebar.checkbox('Sample by frequency')
