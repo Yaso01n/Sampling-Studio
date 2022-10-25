@@ -157,7 +157,7 @@ selected2 = option_menu(None, ["Generate"],
 # )
 
 # uploaded file
-upload_file= st.file_uploader("Browse")
+upload_file= st.sidebar.file_uploader("Browse")
 
 if upload_file:
     signal_upload=pd.read_excel(upload_file)
