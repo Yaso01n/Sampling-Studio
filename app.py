@@ -2,6 +2,8 @@
 from io import BytesIO
 from re import X
 from tkinter import Button
+from tkinter.simpledialog import SimpleDialog
+from blinker import Signal
 import numpy as np
 import scipy
 import streamlit as st
@@ -75,10 +77,13 @@ def max_frequency(magnitude=[],time=[]):
     for i in range(len(fft_frequencies)):
         if fft_magnitudes[i] > 22:
             fft_clean_frequencies_array.append(fft_frequencies[i])
-    max_freq = max(fft_clean_frequencies_array)
-    if max_freq >42:
-        return floor(max_freq)
-    else: return ceil(max_freq) 
+    if len(fft_clean_frequencies_array)==0:
+        return 0
+    else:    
+        max_freq = max(fft_clean_frequencies_array)
+        if max_freq >42:
+            return floor(max_freq)
+        else: return ceil(max_freq) 
 
 
 def demo():
@@ -165,61 +170,64 @@ if upload_file:
     x_signal= signal_upload[signal_upload.columns[0]]
     amplitude=find_amplitude(y_signal)
     frequency= max_frequency(y_signal/amplitude,x_signal)
-
-    sampleByFreqUp_ck=st.sidebar.checkbox('Sample by frequency')
-    
-    if sampleByFreqUp_ck:
-        sampleByFreq_sl = st.sidebar.slider("Frequency", min_value=1,value=2)
-        frequency_sample=sampleByFreq_sl
-    else:
-        sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10,value=2)
-        frequency_sample= sampleRate*frequency
-    
-    noise_ck = st.sidebar.checkbox('Add Noise') 
-    if noise_ck:
-        number = st.sidebar.slider('Insert SNR',min_value=1)
-        new_signal = Noise(y_signal, number,1001)
-        y_signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
-    
-    signal_figure= px.line(signal_upload, x=x_signal, y=y_signal, title="The normal signal")
-    addSignal = st.sidebar.checkbox('Add Signal')
-    
-    if addSignal:
-        added, addedAmp, addedFreq= add_signal()
-        sumSignal = st.sidebar.button('Sum Signals')
-        signal_figure.add_scatter(x=t, y=added, mode="lines",name="Added signal",line={"color":"#e0b0ff"})
-        if sumSignal:
-                y_signal= sum_signal(y_signal,added)
-                frequency=frequency+addedFreq
-                amplitude=amplitude+addedAmp
-                signal_figure = px.line(y_signal, x=t, y=y_signal)
-                
-   
-
-    #sampling func
-    if frequency_sample!=0:
-        T=1/frequency_sample
-        n_Sample=np.arange(0,1/T)
-        t_sample = n_Sample * T
+    if frequency==0:
+        signal_figure= px.line(signal_upload, x=signal_upload.columns[0], y=signal_upload.columns[1], title="Reconstructed signal that is almost a line")
+    else:  
+        signal_figure= px.line(signal_upload, x=signal_upload.columns[0], y=signal_upload.columns[1], title="The normal signal")  
+        sampleByFreqUp_ck=st.sidebar.checkbox('Sample by frequency')
         
-        amplitude=find_amplitude(y_signal)
-        frequency=max_frequency(y_signal/amplitude,x_signal)
-        signal_sample = amplitude * np.sin(2 * np.pi * frequency * t_sample)
-        signal_figure.add_scatter(x=t_sample, y=signal_sample,mode="markers",name="samples points", marker={"color":"black"})
+        if sampleByFreqUp_ck:
+            sampleByFreq_sl = st.sidebar.slider("Frequency", min_value=1,value=2)
+            frequency_sample=sampleByFreq_sl
+        else:
+            sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10,value=2)
+            frequency_sample= sampleRate*frequency
         
-        Inter=st.checkbox("interpolation")
-        if Inter:
-            sum=0
+        noise_ck = st.sidebar.checkbox('Add Noise') 
+        if noise_ck:
+            number = st.sidebar.slider('Insert SNR',min_value=1)
+            new_signal = Noise(y_signal, number,1001)
+            y_signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
+        
+        
+        addSignal = st.sidebar.checkbox('Add Signal')
+        
+        if addSignal:
+            added, addedAmp, addedFreq= add_signal()
+            sumSignal = st.sidebar.button('Sum Signals')
+            signal_figure.add_scatter(x=t, y=added, mode="lines",name="Added signal",line={"color":"#e0b0ff"})
+            if sumSignal:
+                    y_signal= sum_signal(y_signal,added)
+                    frequency=frequency+addedFreq
+                    amplitude=amplitude+addedAmp
+                    signal_figure = px.line(y_signal, x=t, y=y_signal)
+                    
+    
+
+        #sampling func
+        if frequency_sample!=0:
+            T=1/frequency_sample
+            n_Sample=np.arange(0,1/T)
+            t_sample = n_Sample * T
+            
             amplitude=find_amplitude(y_signal)
             frequency=max_frequency(y_signal/amplitude,x_signal)
+            signal_sample = amplitude * np.sin(2 * np.pi * frequency * t_sample)
+            signal_figure.add_scatter(x=t_sample, y=signal_sample,mode="markers",name="samples points", marker={"color":"black"})
             
-            for i in n_Sample:
-                s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)
-                sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
-            signal_figure.add_scatter(x=t, y=sum, mode="lines",name="Reconstructed signal", line={"color":"red"})
-        
+            Inter=st.checkbox("interpolation")
+            if Inter:
+                sum=0
+                amplitude=find_amplitude(y_signal)
+                frequency=max_frequency(y_signal/amplitude,x_signal)
+                
+                for i in n_Sample:
+                    s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)
+                    sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
+                signal_figure.add_scatter(x=t, y=sum, mode="lines",name="Reconstructed signal", line={"color":"red"})
+            
     st.plotly_chart(signal_figure, use_container_width=True)
-    
+        
     download(x_signal,y_signal)
 
 elif selected2=="Generate":
@@ -287,8 +295,8 @@ elif selected2=="Generate":
             for i in n_Sample:
                 s_sample = amplitude* np.sin(2 * np.pi * frequency *i* T)
                 sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
-        
-            fig.add_scatter(x=t, y=sum, mode="lines",name="Reconstructed signal", line={"color":"red"})
+            signal=sum
+            fig.add_scatter(x=t, y=signal, mode="lines",name="Reconstructed signal", line={"color":"red"})
 
             
     st.plotly_chart(fig,  use_container_width=True)
