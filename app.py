@@ -166,11 +166,18 @@ if upload_file:
     amplitude=find_amplitude(y_signal)
     frequency= max_frequency(y_signal/amplitude,x_signal)
 
-    sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10)
+    sampleByFreqUp_ck=st.sidebar.checkbox('Sample by frequency')
+    
+    if sampleByFreqUp_ck:
+        sampleByFreq_sl = st.sidebar.slider("Frequency", min_value=1,value=2)
+        frequency_sample=sampleByFreq_sl
+    else:
+        sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10,value=2)
+        frequency_sample= sampleRate*frequency
     
     noise_ck = st.sidebar.checkbox('Add Noise') 
     if noise_ck:
-        number = st.sidebar.slider('Insert SNR')
+        number = st.sidebar.slider('Insert SNR',min_value=1)
         new_signal = Noise(y_signal, number,1001)
         y_signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
     
@@ -190,7 +197,6 @@ if upload_file:
    
 
     #sampling func
-    frequency_sample=frequency*sampleRate
     if frequency_sample!=0:
         T=1/frequency_sample
         n_Sample=np.arange(0,1/T)
