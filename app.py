@@ -90,6 +90,18 @@ def demo():
     y_demo=np.sin(2 * np.pi * t)
     return y_demo
 
+# Initialization of session state
+if 't' not in st.session_state:
+    st.session_state['t'] = t
+
+if 'signals table' not in st.session_state:
+    st.session_state['signals table'] = []
+
+def update_signal(magnitude, frequency):
+    for i in range(len(st.session_state['t'])):
+        st.session_state['signal'][i] += magnitude * \
+            np.sin(2*np.pi*frequency*st.session_state['t'][i])        
+
 
  
 #Adding noise to signal
@@ -236,6 +248,24 @@ elif selected2=="Generate":
     frequency = st.sidebar.slider("Max Frequency", min_value=1)
     amplitude = st.sidebar.slider("Amplitude", min_value=1)
     signal = amplitude * np.sin(2 * np.pi * frequency * t)
+    if 'signal' not in st.session_state:
+        st.session_state['signal'] = signal
+    #adding signals
+    if st.sidebar.button("Add Signal"):
+        update_signal(frequency,amplitude)
+        st.session_state['signals table'].append([frequency, amplitude])
+        signal= st.session_state['signal']
+        fig = px.line(signal, x=t, y=signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
+
+    # #remove signals
+    # undo_signals = st.sidebar.multiselect("Remove signals", options=st.session_state['signals table'], label_visibility="hidden")    
+    
+    # if st.sidebar.button("remove Signal"):
+    #     for item in undo_signals:
+    #         update_signal(-1.0*item[0], item[1])
+    #         for item2 in st.session_state['signals table']:
+    #             if item == item2:
+    #                 st.session_state['signals table'].remove(item2)
 
     sampleByFreq_ck=st.sidebar.checkbox('Sample by frequency')
     
@@ -302,6 +332,18 @@ elif selected2=="Generate":
     st.plotly_chart(fig,  use_container_width=True)
 
     download(t,signal)
+    
+
+
+
+
+
+
+
+
+
+
+
     
 
 
