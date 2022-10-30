@@ -1,4 +1,3 @@
-
 from io import BytesIO
 from re import X
 from tkinter import Button
@@ -86,9 +85,7 @@ def max_frequency(magnitude=[],time=[]):
         else: return ceil(max_freq) 
 
 
-def demo():
-    y_demo=np.sin(2 * np.pi * t)
-    return y_demo
+
 
 # Initialization of session state
 if 't' not in st.session_state:
@@ -140,18 +137,6 @@ def download(time , magnitude):
     )
 
 
-def sum_signal(data, new1):
-    newSignal = data + new1
-    return newSignal
-
-def add_signal():
-    Add_F= st.sidebar.slider("F(max)")
-    Add_Am = st.sidebar.slider("Amp.")        
-    Include_signal= Add_Am * np.sin( 2 * np.pi * Add_F* t)
-    return Include_signal, Add_Am, Add_F;
-
-
-
 
 # horizontal menu
 selected2 = option_menu(None, ["Generate"], 
@@ -165,15 +150,6 @@ selected2 = option_menu(None, ["Generate"],
     }
 
     )
-
-# def callback():
-#     st.session_state.button_clicked=True
-# st.button(
-#     label='upload',
-#     on_click=callback()
-# )
-
-# uploaded file
 upload_file= st.sidebar.file_uploader("Browse")
 
 if upload_file:
@@ -187,6 +163,23 @@ if upload_file:
     else:  
         signal_figure= px.line(signal_upload, x=signal_upload.columns[0], y=signal_upload.columns[1], title="The normal signal")  
         sampleByFreqUp_ck=st.sidebar.checkbox('Sample by frequency')
+        
+        add_Signal = st.sidebar.checkbox('Add signal')
+        if add_Signal:
+            frequency_added=st.sidebar.slider("Frequency of the added signal")
+            amp_added=st.sidebar.slider("amplitude of the added signal")
+            
+
+            update_signal(frequency_added,amp_added)
+            st.session_state['signals table'].append([frequency_added, amp_added])
+            y_signal= y_signal+st.session_state['signal']
+            signal_figure = px.line(y_signal, x=t, y=y_signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
+            undo_signals = st.sidebar.multiselect("Remove signals", options=st.session_state['signals table'])
+            for item in undo_signals:    # #remove signals
+                update_signal(-1.0*item[0], item[1])
+                for item2 in st.session_state['signals table']:
+                    if item == item2:
+                        st.session_state['signals table'].remove(item2)
         
         if sampleByFreqUp_ck:
             sampleByFreq_sl = st.sidebar.slider("Frequency", min_value=1,value=2)
@@ -202,17 +195,9 @@ if upload_file:
             y_signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
         
         
-        addSignal = st.sidebar.checkbox('Add Signal')
-        
-        if addSignal:
-            added, addedAmp, addedFreq= add_signal()
-            sumSignal = st.sidebar.button('Sum Signals')
-            signal_figure.add_scatter(x=t, y=added, mode="lines",name="Added signal",line={"color":"#e0b0ff"})
-            if sumSignal:
-                    y_signal= sum_signal(y_signal,added)
-                    frequency=frequency+addedFreq
-                    amplitude=amplitude+addedAmp
-                    signal_figure = px.line(y_signal, x=t, y=y_signal)
+    
+                           
+    
                     
     
 
@@ -250,23 +235,20 @@ elif selected2=="Generate":
     signal = amplitude * np.sin(2 * np.pi * frequency * t)
     if 'signal' not in st.session_state:
         st.session_state['signal'] = signal
+    
     #adding signals
-    if st.sidebar.button("Add Signal"):
+    if st.sidebar.checkbox("Add Signal"):
         update_signal(frequency,amplitude)
         st.session_state['signals table'].append([frequency, amplitude])
         signal= st.session_state['signal']
         fig = px.line(signal, x=t, y=signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
-
-    # #remove signals
-    # undo_signals = st.sidebar.multiselect("Remove signals", options=st.session_state['signals table'], label_visibility="hidden")    
-    
-    # if st.sidebar.button("remove Signal"):
-    #     for item in undo_signals:
-    #         update_signal(-1.0*item[0], item[1])
-    #         for item2 in st.session_state['signals table']:
-    #             if item == item2:
-    #                 st.session_state['signals table'].remove(item2)
-
+        undo_signals = st.sidebar.multiselect("Remove signals", options=st.session_state['signals table'])
+        for item in undo_signals:    # #remove signals
+            update_signal(-1.0*item[0], item[1])
+            for item2 in st.session_state['signals table']:
+                if item == item2:
+                    st.session_state['signals table'].remove(item2)
+               
     sampleByFreq_ck=st.sidebar.checkbox('Sample by frequency')
     
     if sampleByFreq_ck:
@@ -283,26 +265,11 @@ elif selected2=="Generate":
         new_signal = Noise(signal, number,1001)
         signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
     
-    addSignal = st.sidebar.checkbox('Add Signal')
-    
-
     fig = px.line(signal, x=t, y=signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
     fig.update_yaxes(title_font=dict(size=18,family="Arial"))
     fig.update_xaxes(title_font=dict(size=18,family="Arial"))
 
-    
-    if addSignal:
-        added, addedAmp, addedFreq= add_signal()
-        sumSignal = st.sidebar.button('Sum Signals')
-        fig.add_scatter(x=t, y=added, mode="lines",name="added signal",line={"color":"#e0b0ff"})
-        if sumSignal:
-                signal= sum_signal(signal,added)  
-                frequency=frequency+addedFreq
-                amplitude=amplitude+addedAmp
-                fig = px.line(signal, x=t, y=signal)
 
-                
-    
     #sampling func
     if frequency_sample!=0:
         T=1/frequency_sample
@@ -332,29 +299,3 @@ elif selected2=="Generate":
     st.plotly_chart(fig,  use_container_width=True)
 
     download(t,signal)
-    
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
