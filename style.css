@@ -50,9 +50,23 @@
 .css-hxt7ib {
     padding-top: 0.5rem;
 }
-.css-18ipw5t {
+ .css-18ipw5t {
     gap: 0.25rem;
-  }
+  } 
  .css-k1vhr4 {
     overflow: hidden;
+  }
+.st-dn {
+    background-color: rgb(229, 226, 226);
+    border-color: black;
+  }
+.css-1c12fus {
+    gap: 0.25rem;
+}
+
+.css-hxt7ib {
+    padding-top: 0.25rem;
+  }
+  .css-1xbuuuf {
+    gap: 0.1rem;
   }
