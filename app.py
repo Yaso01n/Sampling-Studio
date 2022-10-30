@@ -58,7 +58,7 @@ col = f''' <style> div.stSlider > div[data-baseweb = "slider"] > div > div {{
 
 ColorSlider = st.markdown(col, unsafe_allow_html = True)
 
-Fs = 1000    #Sampling Freqyency    
+Fs = 1000    #Sampling Frequency    
 t = np.arange(0, 1 + 1 / Fs, 1 / Fs)    # Time
 
 def find_amplitude(signal):
@@ -93,6 +93,18 @@ if 't' not in st.session_state:
 
 if 'signals table' not in st.session_state:
     st.session_state['signals table'] = []
+if 'noise' not in st.session_state:
+    st.session_state['noise'] = 1
+
+if 'up_noise' not in st.session_state:
+    st.session_state['up_noise'] = 1
+
+if 'sample_by_frequency' not in st.session_state:
+    st.session_state['sample_by_frequency'] = 1
+
+if 'sample_rate' not in st.session_state:
+    st.session_state['sample_rate'] = 2    
+
 
 def update_signal(magnitude, frequency):
     for i in range(len(st.session_state['t'])):
@@ -109,8 +121,26 @@ def Noise(Data, number,n):
     noise_signal = sc.sqrt(Noise)*sc.randn(n)    #Noise Signal
         
     return noise_signal
-
-
+def sampling_inter(signal_y,signal_x,frequency_sample,fig):
+        T=1/frequency_sample
+        n_Sample=np.arange(0,1/T)
+        t_sample = n_Sample * T
+        amplitude=find_amplitude(signal_y)
+        frequency=max_frequency(signal_y/amplitude,signal_x)
+        Inter=st.checkbox("interpolation")
+        if Inter:
+            sum=0
+            #t.write(frequency)
+            for i in n_Sample:
+                sample = amplitude * np.sin(2 * np.pi * frequency *i* T)
+                sum+= np.dot(sample,np.sinc((t-i*T)/T))
+            global signal
+            signal=sum
+            fig.add_scatter(x=t, y=signal, mode="lines",name="Reconstructed signal", line={"color":"red"})
+            
+        signal_sample = amplitude * np.sin(2 * np.pi * frequency * t_sample)
+        return signal_sample , t_sample;
+                
 #download a file as excel
 def download(time , magnitude):
     output = BytesIO()
@@ -136,20 +166,6 @@ def download(time , magnitude):
         mime="application/vnd.ms-excel"
     )
 
-
-
-# horizontal menu
-selected2 = option_menu(None, ["Generate"], 
-    icons=['play'], 
-    menu_icon="cast", default_index=0, orientation="horizontal" ,
-    styles={
-        "container": {"padding": "0 px"},
-        "icon": {"color": "black", "font-size": "25px"}, 
-        "nav-link": {"font-size": "25px", "text-align": "left", "margin":"0px", "--hover-color": "#eee"},
-        "nav-link-selected": {"background-color": "grey"},
-    }
-
-    )
 upload_file= st.sidebar.file_uploader("Browse")
 
 if upload_file:
@@ -162,17 +178,14 @@ if upload_file:
         signal_figure= px.line(signal_upload, x=signal_upload.columns[0], y=signal_upload.columns[1], title="Reconstructed signal that is almost a line")
     else:  
         signal_figure= px.line(signal_upload, x=signal_upload.columns[0], y=signal_upload.columns[1], title="The normal signal")  
-        sampleByFreqUp_ck=st.sidebar.checkbox('Sample by frequency')
-        
         add_Signal = st.sidebar.checkbox('Add signal')
         if add_Signal:
-            frequency_added=st.sidebar.slider("Frequency of the added signal")
-            amp_added=st.sidebar.slider("amplitude of the added signal")
+            frequency_added=st.sidebar.slider("Frequency of the added signal", min_value=1)
+            amp_added=st.sidebar.slider("amplitude of the added signal", min_value=1)
             
-
-            update_signal(frequency_added,amp_added)
-            st.session_state['signals table'].append([frequency_added, amp_added])
-            y_signal= y_signal+st.session_state['signal']
+            update_signal(amp_added, frequency_added)
+            st.session_state['signals table'].append([amp_added, frequency_added])
+            y_signal+=st.session_state['signal']
             signal_figure = px.line(y_signal, x=t, y=y_signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
             undo_signals = st.sidebar.multiselect("Remove signals", options=st.session_state['signals table'])
             for item in undo_signals:    # #remove signals
@@ -180,122 +193,118 @@ if upload_file:
                 for item2 in st.session_state['signals table']:
                     if item == item2:
                         st.session_state['signals table'].remove(item2)
-        
+        sampleByFreqUp_ck=st.sidebar.checkbox('Sample by frequency')
         if sampleByFreqUp_ck:
-            sampleByFreq_sl = st.sidebar.slider("Frequency", min_value=1,value=2)
+            sampleByFreq_sl = st.sidebar.slider("Frequency", min_value=1,value=st.session_state['sample_by_frequency'])
             frequency_sample=sampleByFreq_sl
+            st.session_state['sample_by_frequency']= sampleByFreq_sl
         else:
-            sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10,value=2)
+            sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10,value=st.session_state['sample_rate'])
             frequency_sample= sampleRate*frequency
+            st.session_state['sample_rate']= sampleRate
         
         noise_ck = st.sidebar.checkbox('Add Noise') 
         if noise_ck:
-            number = st.sidebar.slider('Insert SNR',min_value=1)
+            number = st.sidebar.slider('Insert SNR',min_value=1, value=st.session_state['up_noise'])
             new_signal = Noise(y_signal, number,1001)
+            st.session_state['up_noise'] = number
             y_signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
         
+        signal_figure = px.line(y_signal, x=t, y=y_signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
         
-    
-                           
-    
-                    
-    
-
         #sampling func
         if frequency_sample!=0:
-            T=1/frequency_sample
-            n_Sample=np.arange(0,1/T)
-            t_sample = n_Sample * T
+            # T=1/frequency_sample
+            # n_Sample=np.arange(0,1/T)
+            # t_sample = n_Sample * T
             
-            amplitude=find_amplitude(y_signal)
-            frequency=max_frequency(y_signal/amplitude,x_signal)
-            signal_sample = amplitude * np.sin(2 * np.pi * frequency * t_sample)
+            # amplitude=find_amplitude(y_signal)
+            # frequency=max_frequency(y_signal/amplitude,x_signal)
+            signal_sample,t_sample = sampling_inter(y_signal,x_signal,frequency_sample,signal_figure)
             signal_figure.add_scatter(x=t_sample, y=signal_sample,mode="markers",name="samples points", marker={"color":"black"})
             
-            Inter=st.checkbox("interpolation")
-            if Inter:
-                sum=0
-                amplitude=find_amplitude(y_signal)
-                frequency=max_frequency(y_signal/amplitude,x_signal)
+            # Inter=st.checkbox("interpolation")
+            # if Inter:
+            #     sum=0
+            #     st.write(frequency)
                 
-                for i in n_Sample:
-                    s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)
-                    sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
-                signal_figure.add_scatter(x=t, y=sum, mode="lines",name="Reconstructed signal", line={"color":"red"})
+            #     for i in n_Sample:
+            #         s_sample = amplitude * np.sin(2 * np.pi * frequency *i* T)
+                    #sum= 
+           # signal_figure.add_scatter(x=t, y=sum, mode="lines",name="Reconstructed signal", line={"color":"red"})
             
-    st.plotly_chart(signal_figure, use_container_width=True)
-        
+    
+        st.plotly_chart(signal_figure, use_container_width=True)    
     download(x_signal,y_signal)
-
-elif selected2=="Generate":
-
+else:
     #drawing normal sine
-    frequency = st.sidebar.slider("Max Frequency", min_value=1)
-    amplitude = st.sidebar.slider("Amplitude", min_value=1)
+    frequency = st.sidebar.slider("Max Frequency", min_value=0,value=1)
+    amplitude = st.sidebar.slider("Amplitude", min_value=0,value=1)
     signal = amplitude * np.sin(2 * np.pi * frequency * t)
+    st.session_state['signals table'].append([amplitude, frequency])
     if 'signal' not in st.session_state:
         st.session_state['signal'] = signal
     
     #adding signals
     if st.sidebar.checkbox("Add Signal"):
-        update_signal(frequency,amplitude)
-        st.session_state['signals table'].append([frequency, amplitude])
-        signal= st.session_state['signal']
+        update_signal(amplitude, frequency)
+        st.session_state['signals table'].append([amplitude, frequency])
+        signal+= st.session_state['signal']
         fig = px.line(signal, x=t, y=signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
-        undo_signals = st.sidebar.multiselect("Remove signals", options=st.session_state['signals table'])
-        for item in undo_signals:    # #remove signals
-            update_signal(-1.0*item[0], item[1])
-            for item2 in st.session_state['signals table']:
-                if item == item2:
-                    st.session_state['signals table'].remove(item2)
-               
-    sampleByFreq_ck=st.sidebar.checkbox('Sample by frequency')
+    undo_signals = st.sidebar.multiselect("Remove signals", options=st.session_state['signals table'])
+    for item in undo_signals:    # #remove signals
+        update_signal(-1.0*item[0], item[1])
+        for item2 in st.session_state['signals table']:
+            if item == item2:
+                st.session_state['signals table'].pop(item2)
+                
+    sampleByfreq_ck=st.sidebar.checkbox('Sample By Frequency')
     
-    if sampleByFreq_ck:
-        sampleByFreq_sl = st.sidebar.slider("Frequency", min_value=1,value=2)
+    if sampleByfreq_ck:
+        sampleByFreq_sl = st.sidebar.slider("Frequency", min_value=1,value=st.session_state['sample_by_frequency'])
         frequency_sample=sampleByFreq_sl
+        st.session_state['sample_by_frequency']= sampleByFreq_sl
     else:
-        sampleRate = st.sidebar.slider("sample rate", min_value=0,max_value=10,value=2)
-        frequency_sample= sampleRate*frequency
-
+        sampleRateUp = st.sidebar.slider("Sample rate", min_value=0,max_value=10,value=st.session_state['sample_rate'])
+        frequency_sample= sampleRateUp*frequency
+        st.session_state['sample_rate']= sampleRateUp
+    
     noise = st.sidebar.checkbox('Add noise')
     if noise:
         
-        number = st.sidebar.slider('Insert SNR',min_value=1)
+        number = st.sidebar.slider('Insert SNR',min_value=1,value=st.session_state['noise'])
         new_signal = Noise(signal, number,1001)
+        st.session_state['noise'] =number
         signal = amplitude * np.sin(2 * np.pi * frequency * t) + new_signal
+        
     
-    fig = px.line(signal, x=t, y=signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
+    fig = px.line(x=t, y=signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
     fig.update_yaxes(title_font=dict(size=18,family="Arial"))
     fig.update_xaxes(title_font=dict(size=18,family="Arial"))
-
-
+    
+    
     #sampling func
     if frequency_sample!=0:
-        T=1/frequency_sample
-        n_Sample=np.arange(0,1/T)
-        t_sample = n_Sample * T
+        # T=1/frequency_sample
+        # n_Sample=np.arange(0,1/T)
+        # t_sample = n_Sample * T
         
-        amplitude=find_amplitude(signal)
-        frequency=max_frequency(signal/amplitude,t)
-        signal_sample = amplitude * np.sin(2 * np.pi *frequency* t_sample)
+        # amplitude=find_amplitude(signal)
+        # frequency=max_frequency(signal/amplitude,t)
+        #signal_sample = amplitude * np.sin(2 * np.pi *frequency* t_sample)
+        signal_sample,t_sample=sampling_inter(signal,t,frequency_sample,fig)
     
-            
         fig.add_scatter(x=t_sample, y=signal_sample, mode="markers",name="samples points", marker={"color":"black"})
         
         
-        Inter=st.checkbox("interpolation")
-        if Inter:
-            sum=0
-            amplitude=find_amplitude(signal)
-            frequency=max_frequency(signal/amplitude,t)
-            for i in n_Sample:
-                s_sample = amplitude* np.sin(2 * np.pi * frequency *i* T)
-                sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
-            signal=sum
-            fig.add_scatter(x=t, y=signal, mode="lines",name="Reconstructed signal", line={"color":"red"})
-
-            
-    st.plotly_chart(fig,  use_container_width=True)
-
+        # Inter=st.checkbox("Interpolation")
+        # if Inter:
+        #     sum=0
+        #     for i in n_Sample:
+        #         s_sample = amplitude* np.sin(2 * np.pi * frequency *i* T)
+        #         sum+= np.dot(s_sample,np.sinc((t-i*T)/T))
+        #     signal=sum
+        #fig.add_scatter(x=t, y=signal, mode="lines",name="Reconstructed signal", line={"color":"red"})
+    
+    st.plotly_chart(fig, use_container_width=True)
     download(t,signal)
