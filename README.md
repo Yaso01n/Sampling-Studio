@@ -10,23 +10,26 @@
 
 
 ## Project feautures
-### 1.Generating a function
-#### you can add the frequency and amplitude values and the page will plot your sine function.
+    <p align="center">
+    <img src="https://user-images.githubusercontent.com/87495750/199120843-eb5ec28a-143c-4b1b-aa2e-bb13b46e731b.jpeg"> 
+    
+### 1. Generating a new function
+#### you can add the frequency and amplitude values and the page will plot your sine wave.
 ![2022-10-23_073654](https://user-images.githubusercontent.com/87495750/197375800-e618c9d1-c7f7-499b-85b1-fe551cd7b678.png) 
 ![generate example](https://user-images.githubusercontent.com/87495750/197375939-7d09f27d-0c47-47f1-adb3-59bf2bcdea4d.png)
 
-### 2.Adding a signal
-#### you can add a new function on the plot by entering another frequency and amplitude.
-![addition](https://user-images.githubusercontent.com/87495750/197376164-fd1f69d8-7205-4be4-89cd-42f25ecf7c43.png)
 
-
-### 3.summation of signals
-#### you can sum the signal you added or enter a new frequency and amblitude to add them immediatly.
-![addition](https://user-images.githubusercontent.com/87495750/197376164-fd1f69d8-7205-4be4-89cd-42f25ecf7c43.png)  
+### 2. summation of signals
+#### you can add any number of signals by entering a new frequency and amblitude to sum and plot them immediatly.
 ![sum](https://user-images.githubusercontent.com/87495750/197376477-82fb839b-1797-45ec-b235-cc3a35a74dc4.png)
+        
+### 2. Remove signals
+#### you can remove the added signals by choosing the signal you want to remove from the drop down list.  
+![2022-11-01_005003](https://user-images.githubusercontent.com/87495750/199124663-b7f84483-3c14-489a-9458-605c868b3af8.png)        
 
-### 4.Add noise
+### 3. Add noise
 #### you can enter the SNR ratio then, the noise will be added to the signal.
+![2022-11-01_003645](https://user-images.githubusercontent.com/87495750/199123262-777a8da2-cc73-49fa-bd80-f01fa727d840.png)        
 ![noise](https://user-images.githubusercontent.com/87495750/197376605-167038f1-274c-460f-8e92-50abe9db861a.png)
 
 ### 5.Signal sampling
@@ -48,7 +51,7 @@
 ![upload](https://user-images.githubusercontent.com/87495750/197377452-9403444c-ba13-4d1e-96db-9bbe006b7f6d.png)
 
 ### 9.Uploaded signal feautures
-#### you can use the same feautures that are in generating a signal like add a signal, sum a signal, add noise, signal sampling, signal interpolation and downloading the signal again.
+#### you can use the same feautures that are in generating a signal like add signals, remove signals, add noise, signal sampling, signal interpolation and downloading the signal again.
 
 
 
