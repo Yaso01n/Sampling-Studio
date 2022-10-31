@@ -85,11 +85,13 @@ def max_frequency(magnitude=[],time=[]):
         else: return ceil(max_freq) 
 
 
-
+signal= 1 * np.sin(2 * np.pi * 1 * t)
 
 # Initialization of session state
 if 't' not in st.session_state:
     st.session_state['t'] = t
+if 'signal' not in st.session_state:
+        st.session_state['signal'] = signal
 
 if 'signals table' not in st.session_state:
     st.session_state['signals table'] = []
@@ -241,9 +243,7 @@ else:
     frequency = st.sidebar.slider("Max Frequency", min_value=0,value=1)
     amplitude = st.sidebar.slider("Amplitude", min_value=0,value=1)
     signal = amplitude * np.sin(2 * np.pi * frequency * t)
-    st.session_state['signals table'].append([amplitude, frequency])
-    if 'signal' not in st.session_state:
-        st.session_state['signal'] = signal
+    
     
     #adding signals
     if st.sidebar.checkbox("Add Signal"):
@@ -251,12 +251,12 @@ else:
         st.session_state['signals table'].append([amplitude, frequency])
         signal+= st.session_state['signal']
         fig = px.line(signal, x=t, y=signal).update_layout(xaxis_title="Time (Sec)", yaxis_title="Amplitude")
-    undo_signals = st.sidebar.multiselect("Remove signals", options=st.session_state['signals table'])
-    for item in undo_signals:    # #remove signals
-        update_signal(-1.0*item[0], item[1])
-        for item2 in st.session_state['signals table']:
-            if item == item2:
-                st.session_state['signals table'].pop(item2)
+        undo_signals = st.sidebar.multiselect("Remove signals", options=st.session_state['signals table'])
+        for item in undo_signals:    # #remove signals
+            update_signal(-1.0*item[0], item[1])
+            for item2 in st.session_state['signals table']:
+                if item == item2:
+                    st.session_state['signals table'].remove(item2)
                 
     sampleByfreq_ck=st.sidebar.checkbox('Sample By Frequency')
     
