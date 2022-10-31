@@ -10,7 +10,7 @@
 
 
 ## Project feautures
-    <p align="center">
+<p align="center">
     <img src="https://user-images.githubusercontent.com/87495750/199120843-eb5ec28a-143c-4b1b-aa2e-bb13b46e731b.jpeg"> 
     
 ### 1. Generating a new function
