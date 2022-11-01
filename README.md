@@ -38,9 +38,9 @@
 
 ### 6. Sampled Signal recovering
 #### the sampled points can be interpolated to recover the original signal using Whittaker–Shannon interpolation formula.
-##### if the sampling rate less than or equal nyquest rate, the original signal will not be completely recovered 
+##### if the sampling rate less than the nyquest rate, the original signal will not be completely recovered 
 ![2022-10-23_080816](https://user-images.githubusercontent.com/87495750/197377133-686ddb8d-9d3f-472a-96eb-e812c39d1704.png)
-##### if the sampling rate more than nyquest rate, the original signal will be nearly recovered
+##### if the sampling rate is equal or more than nyquest rate, the original signal will be nearly recovered
 ![good interpolation](https://user-images.githubusercontent.com/87495750/197377176-0522aa1d-bec7-4aff-9cc5-f9a2562cc517.png)
 
 ### 7. Downloading the signal
