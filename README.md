@@ -33,7 +33,7 @@
 ![noise](https://user-images.githubusercontent.com/87495750/197376605-167038f1-274c-460f-8e92-50abe9db861a.png)
 
 ### 5. Signal sampling
-#### you can add the sample ratio you want and the points of sampling will be added to the signal.
+#### you can add the sample rate or the sampling frequency you want and the points of sampling will be added to the signal.
 ![sample](https://user-images.githubusercontent.com/87495750/197376965-19fb1d87-7b0e-46ca-83b2-5e0bdbfc8628.png)
 
 ### 6. Sampled Signal recovering
